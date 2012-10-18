@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+historias = []
+
 def valida_historia(historia):
     
     h ={'transacoes':[], 'dados':[], 'hist':[] }
@@ -37,11 +39,22 @@ def valida_historia(historia):
     h['transacoes'] = list(set(h['transacoes']))
     h['dados'] = list(set(h['dados']))
     return h
-    
 
-historias = open('historia.txt','r')
-for historia in historias.readlines():
+#Lê o arquivo e valida as informações    
+for historia in open('historia.txt','r').readlines():
     var = valida_historia(historia)
     if var != -1:
-        print var    
+        historias.append(var)
+        
+if historias:
+    print 'História valida! :)\n'
+    
+
+
+
+
+
+
+
+
 
