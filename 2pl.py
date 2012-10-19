@@ -47,50 +47,55 @@ for historia in open('historia.txt','r').readlines():
         historias.append(var)
         
 if historias:
-    print 'Avaliação sintatica valida! :)\n'
+    print '\nAvaliação sintatica válida! :)\n'
     
 def valida_operacao(historico):
     for acao in historico:
         if acao['operacao'] == 'c':
-            pass
-            
-        
+            for k in [k for k in dados.keys() if acao['transacao'] in dados[k]['transacao']]:
+                dados[k]['transacao'].del(acao['transacao'])
+                
+                if not dados[k]['transacao'] or dados[acao['dado']]['tipo'] == 'w':
+                    dados[acao['dado']]['tipo'] = ''
+                
         if acao['operacao'] == 'r':
             if dados[acao['dado']]['tipo'] in ['','r']: 
                 dados[acao['dado']]['tipo'] = 'r'
                 dados[acao['dado']]['transacao'].append(acao['transacao'])
             else:
                 t =  [ x for x in dados[acao['dado']]['transacao'] if x != acao['transacao'] ]
-                if not t:
+                if t:
                     print 'Existe '+str(t)+' transacoes em conflito com a acao '+str(acao)
                     return False
         
         if acao['operacao'] == 'w':
+            
             if dados[acao['dado']]['tipo']  == '':
                 dados[acao['dado']]['tipo']  = 'w'
                 dados[acao['dado']]['transacao'].append(acao['transacao'])
+                
             
             elif dados[acao['dado']]['tipo']  == 'r':
                 t =  [x for x in dados[acao['dado']]['transacao'] if x != acao['transacao']]
-                if not t:
+                if t:
                     print 'Existe '+str(t)+' transacoes lendo o dado, em conflito com a acao '+str(acao)
                     return False
                 else:
                     dados[acao['dado']]['tipo']  = 'w'
                     
-            elif dados[acao['dado']]['tipo']  == 'w':
+            else:
                 t =  [x for x in dados[acao['dado']]['transacao'] if x != acao['transacao']]
-                if not t:
+                if t:
                     print 'A transacao '+t[0]+' contém bloqueio exclusivo ao dado, gerando conflito com a acao '+str(acao)
                     return False
-    
+    return True
 for h in historias:
     dados = {}
     for d in h['dados']:
         dados[d] = {'transacao':[], 'tipo':''}
     
-    if not valida_operacao(h['hist']):
-        print 'História '+str(h)+' válida!'                
+    if valida_operacao(h['hist']):
+        print 'História  válida!\n\n'+str(h['hist'])               
 
 
 
