@@ -49,7 +49,32 @@ for historia in open('historia.txt','r').readlines():
 if historias:
     print 'História valida! :)\n'
     
-
+for h in historias:
+    dados = {}
+    for d in h['dados']:
+        dados[d] = {'transacao':[], 'tipo',''}
+    
+    for acao in d['hist']:
+        if acao['operacao'] == 'c':
+            pass
+        
+        or (dados[acao['dado']]['tipo'] == 'w' and dados[acao['dado']]['transacao'] == acao['transacao'])  
+        
+        if acao['operacao'] == 'r':
+            if dados[acao['dado']]['tipo'] in ['','r']: 
+                dados[acao['dado']]['tipo'] = 'r'
+                dados[acao['dado']]['transacao'].append(acao['transacao'])
+            else:
+                t =  [1 for x in dados[acao['dado']]['transacao'] if x != acao['transacao']]:
+                print 'Existe '+str(t)+' transacoes em conflito com a acao '+str(acao)
+                return
+        
+        if acao['operacao'] == 'w':
+            if dados[acao['dado']]['tipo']  = '':
+                
+            
+            
+    
 
 
 
