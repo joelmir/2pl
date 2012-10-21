@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-historias = []
 
 def valida_historia(historia):
     
@@ -40,23 +39,54 @@ def valida_historia(historia):
     h['dados'] = list(set(h['dados']))
     return h
 
-#Lê o arquivo e valida as informações    
-for historia in open('historia.txt','r').readlines():
-    var = valida_historia(historia)
-    if var != -1:
-        historias.append(var)
-        
-if historias:
-    print '\nAvaliação sintatica válida! :)\n'
+
     
+    
+    
+def commit():
+    for k in [k for k in dados.keys() if acao['transacao'] in dados[k]['transacao']]:
+        dados[k]['transacao'].remove(acao['transacao'])
+                
+        if not dados[k]['transacao'] or dados[acao['dado']]['tipo'] == 'w':
+           dados[acao['dado']]['tipo'] = ''
+
+def reorganiza_historia(historico, acao, dados):
+    
+    bloqueio = historico.index(acao)
+    
+    #elimina a transacao da historia original que já foi processada
+    historia_pass = [h for h in historico[:bloqueio] if h['transacao'] != acao['transacao']]
+    
+    #elimina a transação história que ainda deve ser processada
+    historia_futu = [h for h in historico[bloqueio+1:] if h['transacao'] != acao['transacao']]
+    
+    #carrega toda a transacao que deseja reordenar na execução da história...
+    transacao = [h for h in historico if h['transacao'] == acao['transacao']]
+    
+    historia_new = []
+    
+    #Intercala com as operações restantes
+    for idx,h in enumerate(historia_futu):
+        historia_new.append(h)
+        if (idx%2 == 0):
+            historia_new.append(transacao.pop())
+    
+    #caso ainda existe pedaços da transação para executar, então adiciona no final...
+    if transacao:
+        historia_new.extend(transacao)
+        
+    #reorganiza os dados...
+    commit()
+    
+    #valida o restante na nova historia
+    valida_operacao(historia_new)
+    
+    
+
 def valida_operacao(historico):
     for acao in historico:
         if acao['operacao'] == 'c':
-            for k in [k for k in dados.keys() if acao['transacao'] in dados[k]['transacao']]:
-                dados[k]['transacao'].del(acao['transacao'])
-                
-                if not dados[k]['transacao'] or dados[acao['dado']]['tipo'] == 'w':
-                    dados[acao['dado']]['tipo'] = ''
+            commit()
                 
         if acao['operacao'] == 'r':
             if dados[acao['dado']]['tipo'] in ['','r']: 
@@ -89,6 +119,19 @@ def valida_operacao(historico):
                     print 'A transacao '+t[0]+' contém bloqueio exclusivo ao dado, gerando conflito com a acao '+str(acao)
                     return False
     return True
+
+historias = []
+
+#Lê o arquivo e valida as informações    
+for historia in open('historia.txt','r').readlines():
+    var = valida_historia(historia)
+    if var != -1:
+        historias.append(var)
+        
+if historias:
+    print '\nAvaliação sintatica válida! :)\n'
+    
+
 for h in historias:
     dados = {}
     for d in h['dados']:
