@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import pdb
 
 def valida_historia(historia):
     
@@ -39,18 +39,19 @@ def valida_historia(historia):
     h['dados'] = list(set(h['dados']))
     return h
 
-
     
-    
-    
-def commit():
+def commit(acao,dados):
+    #pdb.set_trace()
     for k in [k for k in dados.keys() if acao['transacao'] in dados[k]['transacao']]:
         dados[k]['transacao'].remove(acao['transacao'])
                 
-        if not dados[k]['transacao'] or dados[acao['dado']]['tipo'] == 'w':
-           dados[acao['dado']]['tipo'] = ''
+        if not dados[k]['transacao'] or dados[k]['tipo'] == 'w':
+           dados[k]['tipo'] = ''
+    #pdb.set_trace()
+    return dados
 
-def reorganiza_historia(historico, acao):
+def reorganiza_historia(historico,acao,dados):
+    
     
     bloqueio = historico.index(acao)
     
@@ -68,25 +69,27 @@ def reorganiza_historia(historico, acao):
     #Intercala com as operações restantes
     for idx,h in enumerate(historia_futu):
         historia_new.append(h)
-        if (idx%2 == 0):
-            historia_new.append(transacao.pop())
-    
+        if (idx%2 != 0 and transacao):
+            historia_new.append(transacao[0])
+            transacao.remove(transacao[0])
+                
     #caso ainda existe pedaços da transação para executar, então adiciona no final...
     if transacao:
         historia_new.extend(transacao)
         
+    
     #reorganiza os dados...
-    commit()
+    dados = commit(acao,dados)
     
     #valida o restante na nova historia
-    valida_operacao(historia_new)
+    return valida_operacao(historia_new,dados)
     
     
 
-def valida_operacao(historico):
-    for acao in historico:
+def valida_operacao(historico,dados):
+    for idx, acao in enumerate(historico):
         if acao['operacao'] == 'c':
-            commit()
+            dados = commit(acao,dados)
                 
         if acao['operacao'] == 'r':
             if dados[acao['dado']]['tipo'] in ['','r']: 
@@ -96,8 +99,8 @@ def valida_operacao(historico):
                 t =  [ x for x in dados[acao['dado']]['transacao'] if x != acao['transacao'] ]
                 if t:
                     print 'Existe '+str(t)+' transacoes em conflito com a acao '+str(acao)
-                    reorganiza_historia(historico, acao):
-                    return
+                    return historico[:idx].extend(reorganiza_historia(historico,acao,dados))
+                    
         
         if acao['operacao'] == 'w':
             
@@ -110,8 +113,7 @@ def valida_operacao(historico):
                 t =  [x for x in dados[acao['dado']]['transacao'] if x != acao['transacao']]
                 if t:
                     print 'Existe '+str(t)+' transacoes lendo o dado, em conflito com a acao '+str(acao)
-                    reorganiza_historia(historico, acao):
-                    return
+                    return historico[:idx].extend(reorganiza_historia(historico,acao,dados))
                 else:
                     dados[acao['dado']]['tipo']  = 'w'
                     
@@ -119,8 +121,9 @@ def valida_operacao(historico):
                 t =  [x for x in dados[acao['dado']]['transacao'] if x != acao['transacao']]
                 if t:
                     print 'A transacao '+t[0]+' contém bloqueio exclusivo ao dado, gerando conflito com a acao '+str(acao)
-                    reorganiza_historia(historico, acao):
-                    return
+                    return historico[:idx].extend(reorganiza_historia(historico,acao,dados))
+                    
+    return historico
 
 historias = []
 
@@ -138,6 +141,8 @@ for h in historias:
     dados = {}
     for d in h['dados']:
         dados[d] = {'transacao':[], 'tipo':''}
+        
+    h['hist'] = valida_operacao(h['hist'], dados)  
     
     print 'História  válida!\n\n'+str(h['hist'])               
 
