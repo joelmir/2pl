@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pdb, random
 
+
 def valida_historia(historia):
     
     h ={'transacoes':[], 'dados':[], 'hist':[] }
@@ -157,11 +158,28 @@ def valida_operacao(historico,dados,bloqueio):
 
 historias = []
 
-#Lê o arquivo e valida as informações    
-for historia in open('historia.txt','r').readlines():
-    var = valida_historia(historia)
+
+#verifica se possui ou não parametros para gerar uma história ler a existente...
+if len(sys.argv):
+    #Lê o arquivo e valida as informações    
+    for historia in open('historia.txt','r').readlines():
+        var = valida_historia(historia)
+        if var != -1:
+            historias.append(var)
+else:
+    #Lê o arquibo e gera uma história com as transações...
+    historia = []
+    for transacao in open('transacoes.txt','r').readlines():
+        historia.extend(transacao.split())
+    
+    
+    
+    #embaralha
+    shuffle(historia)
+    #valida a historia gerada...
+    var = valida_historia(historia.strip())
     if var != -1:
-        historias.append(var)
+       historias.append(var)
         
 if historias:
     print '\nAvaliação sintatica válida! :)\n'
