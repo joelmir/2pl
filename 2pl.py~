@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import pdb, random
+import pdb, random, sys
 
 
 def valida_historia(historia):
@@ -60,11 +60,12 @@ def reorganiza_historia(historico,acao,dados,rodada_bloqueada):
     bloqueio = historico.index(acao)
     
     #elimina a transação história que ainda deve ser processada
-    historia_futu = [h for h in historico[bloqueio+1:] if h['transacao'] != acao['transacao']]
+    historia_futu = [h for h in historico[bloqueio:] if h['transacao'] != acao['transacao']]
     
     #verifica se ja faz muitas acoes que está bloqueado, pode ser um deadlock
     if rodada_bloqueada >= (len(historico) - bloqueio):
         print 'DeadLock!!!'
+        rodada_bloqueada = 0
         
         #elimina a transacao da historia original que já foi processada
         historia_pass = [h for h in historico[:bloqueio] if h['transacao'] != acao['transacao']]
@@ -160,19 +161,53 @@ historias = []
 
 
 #verifica se possui ou não parametros para gerar uma história ler a existente...
-if len(sys.argv):
+if not sys.argv:
     #Lê o arquivo e valida as informações    
     for historia in open('historia.txt','r').readlines():
         var = valida_historia(historia)
         if var != -1:
             historias.append(var)
 else:
-    #Lê o arquibo e gera uma história com as transações...
-    historia = ''
-    for transacao in open('transacoes.txt','r').readlines():
-        historia.strip() += ' '+transacao
+
+    #TODO
     
-    var = valida_historia(historia.strip())
+    
+    #Lê o arquibo e gera uma história com as transações...
+    historia = []
+    for transacao in open('transacoes.txt','r').readlines():
+        historia.append(transacao.split())
+    
+    #cria a nova historia
+    historia_new = []
+    
+    #Se existir historia....
+    if historia:
+        for transacao in historia:
+        
+            #gera uma posiçao onde será reordenada a transação cancelada...
+            next_position = random.randrange(1,4)
+            
+            #cria uma cópia da historia...
+            historia_old=[]
+            historia_old[:] = historia_new[:]
+            
+            historia_new =[]
+            
+            #Intercala com as operações restantes na historia já gerada
+            for idx,hist in enumerate(historia_old):
+                historia_new.append(hist)
+                if (idx%next_position != 0 and transacao):
+                    historia_new.append(transacao[0])
+                    transacao.remove(transacao[0])
+            if transacao:
+                historia_new.extend(transacao)
+    else:
+        print 'Opppsssss'
+        exit(0)
+        
+    
+    #valida a historia gerada...
+    var = valida_historia((' '.join(historia_new)))
     if var != -1:
        historias.append(var)
         
