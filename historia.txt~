@@ -1,1 +1,1 @@
-w1(x) w2(x) r2(w) w4(x) r3(x) c1 c2 c4
+r2(x) r1(x) w1(x) r3(x) w3(x) w2(y) w1(y) c1 c2 c3
