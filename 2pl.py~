@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import pdb
+import pdb, random
 
 def valida_historia(historia):
     
@@ -65,12 +65,16 @@ def reorganiza_historia(historico,acao,dados):
     
     historia_new = []
     
+    #gera uma posiçao onde será reordenada a transação cancelada...
+    next_position = random.randrange(len(historia_futu))
+
     #Intercala com as operações restantes
     for idx,h in enumerate(historia_futu):
         historia_new.append(h)
-        if (idx%2 != 0 and transacao):
-            historia_new.append(transacao[0])
-            transacao.remove(transacao[0])
+        if idx >= next_position:
+            if (idx%2 != 0 and transacao):
+                historia_new.append(transacao[0])
+                transacao.remove(transacao[0])
                 
     #caso ainda existe pedaços da transação para executar, então adiciona no final...
     if transacao:
@@ -80,16 +84,15 @@ def reorganiza_historia(historico,acao,dados):
     #reorganiza os dados...
     dados = commit(acao,dados)
     
-    
+    #pdb.set_trace()
     op = valida_operacao(historia_new,dados)
     
-    if historia_pass:
-        #valida o restante na nova historia
-        historia_pass.extend(op)
-        
-        return historia_pass
+    #if historia_pass:
+    #valida o restante na nova historia
+    historia_pass.extend(op)
+    return historia_pass
     
-    return op
+    #return op
     
     
 
@@ -130,7 +133,7 @@ def valida_operacao(historico,dados):
                 if t:
                     print 'A transacao '+t[0]+' contém bloqueio exclusivo ao dado, gerando conflito com a acao '+str(acao)
                     return reorganiza_historia(historico,acao,dados)
-                    
+                       
     return historico
 
 historias = []
